@@ -1,0 +1,382 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workflows_sql_elastic_scale_logic_app_name": {
+            "defaultValue": "sql-elastic-scale-logic-app",
+            "type": "String"
+        },
+        "connections_slack_1_externalid": {
+            "defaultValue": "xxxx",
+            "type": "String"
+        },
+        "durable_function_orchestrator_uri": {
+            "defaultValue": "xxxx",
+            "type": "String"
+        },
+        "subscription_id": {
+            "defaultValue": "xxx",
+            "type": "String"
+        },
+        "slack_channel_id": {
+            "defaultValue": "xxxxx",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Logic/workflows",
+            "apiVersion": "2017-07-01",
+            "name": "[parameters('workflows_sql_elastic_scale_logic_app_name')]",
+            "location": "centralus",
+            "tags": {
+                "department": "devops",
+                "env": "production"
+            },
+            "properties": {
+                "state": "Enabled",
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "$connections": {
+                            "defaultValue": {},
+                            "type": "Object"
+                        }
+                    },
+                    "triggers": {
+                        "manual": {
+                            "type": "Request",
+                            "kind": "Http",
+                            "inputs": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "context": {
+                                                    "properties": {
+                                                        "condition": {
+                                                            "properties": {
+                                                                "allOf": {
+                                                                    "items": {
+                                                                        "properties": {
+                                                                            "dimensions": {
+                                                                                "type": "array"
+                                                                            },
+                                                                            "metricName": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "metricNamespace": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "metricValue": {
+                                                                                "type": "number"
+                                                                            },
+                                                                            "operator": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "threshold": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "timeAggregation": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "webTestName": {}
+                                                                        },
+                                                                        "required": [
+                                                                            "metricName",
+                                                                            "metricNamespace",
+                                                                            "operator",
+                                                                            "threshold",
+                                                                            "timeAggregation",
+                                                                            "dimensions",
+                                                                            "metricValue",
+                                                                            "webTestName"
+                                                                        ],
+                                                                        "type": "object"
+                                                                    },
+                                                                    "type": "array"
+                                                                },
+                                                                "windowSize": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "type": "object"
+                                                        },
+                                                        "conditionType": {
+                                                            "type": "string"
+                                                        },
+                                                        "description": {
+                                                            "type": "string"
+                                                        },
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        },
+                                                        "portalLink": {
+                                                            "type": "string"
+                                                        },
+                                                        "resourceGroupName": {
+                                                            "type": "string"
+                                                        },
+                                                        "resourceId": {
+                                                            "type": "string"
+                                                        },
+                                                        "resourceName": {
+                                                            "type": "string"
+                                                        },
+                                                        "resourceType": {
+                                                            "type": "string"
+                                                        },
+                                                        "severity": {
+                                                            "type": "string"
+                                                        },
+                                                        "subscriptionId": {
+                                                            "type": "string"
+                                                        },
+                                                        "timestamp": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                },
+                                                "properties": {},
+                                                "status": {
+                                                    "type": "string"
+                                                },
+                                                "version": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "schemaId": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "actions": {
+                        "Condition_resolved_or_fired": {
+                            "actions": {
+                                "Call_Durable_Azure_function": {
+                                    "runAfter": {
+                                        "Scale_UP_or_Scale_Down": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "Http",
+                                    "inputs": {
+                                        "method": "GET",
+                                        "uri": "[parameters('durable_function_orchestrator_uri')]/@{variables('scaling')}?"
+                                    }
+                                },
+                                "Create_POST_message": {
+                                    "foreach": "@body('Parse_OUTPUT_of_Azure_Function')?['output']",
+                                    "actions": {
+                                        "Append_to_string_variable": {
+                                            "runAfter": {},
+                                            "type": "AppendToStringVariable",
+                                            "inputs": {
+                                                "name": "MessageVar",
+                                                "value": "@concat(item(),decodeUriComponent('%0A'))"
+                                            }
+                                        }
+                                    },
+                                    "runAfter": {
+                                        "Parse_OUTPUT_of_Azure_Function": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "Foreach"
+                                },
+                                "POST_Message_to_Slack": {
+                                    "runAfter": {
+                                        "Create_POST_message": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "ApiConnection",
+                                    "inputs": {
+                                        "body": {
+                                            "channel": "[parameters('slack_channel_id')]",
+                                            "text": "The Status:\n@{variables('MessageVar')}"
+                                        },
+                                        "host": {
+                                            "connection": {
+                                                "name": "@parameters('$connections')['slack']['connectionId']"
+                                            }
+                                        },
+                                        "method": "post",
+                                        "path": "/v2/chat.postMessage"
+                                    }
+                                },
+                                "Parse_OUTPUT_of_Azure_Function": {
+                                    "runAfter": {
+                                        "Call_Durable_Azure_function": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "ParseJson",
+                                    "inputs": {
+                                        "content": "@body('Call_Durable_Azure_function')",
+                                        "schema": {
+                                            "properties": {
+                                                "createdTime": {
+                                                    "type": "string"
+                                                },
+                                                "customStatus": {},
+                                                "input": {
+                                                    "type": "string"
+                                                },
+                                                "instanceId": {
+                                                    "type": "string"
+                                                },
+                                                "lastUpdatedTime": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "output": {
+                                                    "items": {
+                                                        "type": "string"
+                                                    },
+                                                    "type": "array"
+                                                },
+                                                "runtimeStatus": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "Post_Message_Alert_fired": {
+                                    "runAfter": {},
+                                    "type": "ApiConnection",
+                                    "inputs": {
+                                        "body": {
+                                            "channel": "[parameters('slack_channel_id')]",
+                                            "text": "Alert ' *@{triggerBody()?['data']?['context']?['name']}* ' is fired"
+                                        },
+                                        "host": {
+                                            "connection": {
+                                                "name": "@parameters('$connections')['slack']['connectionId']"
+                                            }
+                                        },
+                                        "method": "post",
+                                        "path": "/v2/chat.postMessage"
+                                    }
+                                },
+                                "Scale_UP_or_Scale_Down": {
+                                    "runAfter": {
+                                        "Post_Message_Alert_fired": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "cases": {
+                                        "Scale_Down": {
+                                            "case": "DTU percentage of peekage-elastic-sql is too low",
+                                            "actions": {
+                                                "Set_variable": {
+                                                    "runAfter": {},
+                                                    "type": "SetVariable",
+                                                    "inputs": {
+                                                        "name": "scaling",
+                                                        "value": "down"
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "Scale_UP": {
+                                            "case": "DTU percentage of peekage-elastic-sql is high",
+                                            "actions": {
+                                                "Set_variable_2": {
+                                                    "runAfter": {},
+                                                    "type": "SetVariable",
+                                                    "inputs": {
+                                                        "name": "scaling",
+                                                        "value": "up"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "default": {
+                                        "actions": {}
+                                    },
+                                    "expression": "@triggerBody()?['data']?['context']?['name']",
+                                    "type": "Switch"
+                                }
+                            },
+                            "runAfter": {
+                                "Initialize_variable_POST_message": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "expression": {
+                                "and": [
+                                    {
+                                        "equals": [
+                                            "@triggerBody()?['data']?['status']",
+                                            "Activated"
+                                        ]
+                                    }
+                                ]
+                            },
+                            "type": "If"
+                        },
+                        "Initialize_variable_POST_message": {
+                            "runAfter": {
+                                "Initialize_variable_Scaling": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "MessageVar",
+                                        "type": "string"
+                                    }
+                                ]
+                            }
+                        },
+                        "Initialize_variable_Scaling": {
+                            "runAfter": {},
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "scaling",
+                                        "type": "string",
+                                        "value": "unknown"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "outputs": {}
+                },
+                "parameters": {
+                    "$connections": {
+                        "value": {
+                            "slack": {
+                                "connectionId": "[parameters('connections_slack_1_externalid')]",
+                                "connectionName": "slack-1",
+                                "id": "/subscriptions/[parameters('subscription_id')]/providers/Microsoft.Web/locations/centralus/managedApis/slack"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

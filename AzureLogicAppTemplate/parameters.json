@@ -1,0 +1,21 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workflows_sql_elastic_scale_logic_app_name": {
+            "value": null
+        },
+        "connections_slack_1_externalid": {
+            "value": null
+        },
+        "durable_function_orchestrator_uri": {
+            "value": null
+        },
+        "subscription_id": {
+            "value": null
+        },
+        "slack_channel_id": {
+            "value": null
+        }
+    }
+}

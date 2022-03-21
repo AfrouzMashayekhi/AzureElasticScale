@@ -1,0 +1,19 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "<Azure storage Connection String>",
+    "FUNCTIONS_WORKER_RUNTIME": "powershell",
+    "FUNCTIONS_WORKER_RUNTIME_VERSION": "~7",
+    "SQL_ELASTIC_SCALE_SP_ID": "<service principal id of elastic access>",
+    "SQL_ELASTIC_SCALE_SP_PASS": "<service principal password of elastic access>",
+    "TENANT_ID":"<tenant id of elastic sql pool>",
+    "SQL_POOL_SUBSCRIPTION_ID":"<subscription id of elastic sql pool>",
+    "SQL_POOL_RESOURCE_GROUP_NAME":"<resource group of elastic sql pool>",
+    "SQL_POOL_LOCATION":"<location of elastic sql pool>",
+    "SQL_POOL_NAME":"<elastic sql pool name>",
+    "SQL_SERVER_NAME":"<server name of elastic sql pool>",
+    "SCALE_MARGIN":"margin of the real dtu",
+    "MAX_DTU_RANGE":"max range of dtu",
+    "MIN_DTU_RANGE":"min range of dtu"
+  }
+}

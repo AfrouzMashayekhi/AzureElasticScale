@@ -1,0 +1,9 @@
+{
+  "bindings": [
+    {
+      "name": "scaling",
+      "type": "activityTrigger",
+      "direction": "in"
+    }
+  ]
+}
