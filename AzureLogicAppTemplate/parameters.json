@@ -16,6 +16,13 @@
         },
         "slack_channel_id": {
             "value": null
+        },
+        "alert_rule_name_high": {
+            "value": null
+        },
+        "alert_rule_name_low": {
+            "value": null
         }
+
     }
 }

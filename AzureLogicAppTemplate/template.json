@@ -21,6 +21,14 @@
         "slack_channel_id": {
             "defaultValue": "xxxxx",
             "type": "String"
+        },
+        "alert_rule_name_high": {
+            "defaultValue": "xxxxx",
+            "type": "String"
+        },
+        "alert_rule_name_low": {
+            "defaultValue": "xxxxx",
+            "type": "String"
         }
     },
     "variables": {},
@@ -283,7 +291,7 @@
                                     },
                                     "cases": {
                                         "Scale_Down": {
-                                            "case": "DTU percentage of peekage-elastic-sql is too low",
+                                            "case": "[parameters('alert_rule_name_low')]",
                                             "actions": {
                                                 "Set_variable": {
                                                     "runAfter": {},
@@ -296,7 +304,7 @@
                                             }
                                         },
                                         "Scale_UP": {
-                                            "case": "DTU percentage of peekage-elastic-sql is high",
+                                            "case": "[parameters('alert_rule_name_high')]",
                                             "actions": {
                                                 "Set_variable_2": {
                                                     "runAfter": {},
